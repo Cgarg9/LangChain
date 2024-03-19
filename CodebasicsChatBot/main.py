@@ -4,6 +4,8 @@ from langchain_community.embeddings import HuggingFaceInstructEmbeddings
 from langchain_community.vectorstores import FAISS 
 # import google.generativeai as palm
 from langchain_google_genai import GoogleGenerativeAI
+from langchain.prompts import PromptTemplate
+from langchain.chains import RetrievalQA
 
 import os
 from dotenv import load_dotenv
@@ -24,6 +26,41 @@ def create_vector_db() :
     vectorDB = FAISS.from_documents(documents = data, embedding = instructor_embeddings)
     vectordb.save_local(vector_db_path)
 
+def get_qa_chain():
+
+    # load the db
+    vectorDB = FAISS.load_local(vector_db_path, instructor_embeddings)
+
+    # create retriever
+    retriever = vectorDB.as_retriever(score_threshold=0.7)
+
+    prompt_template = """ Given the following text and a question, generate an answer based on this context only to provide as 
+        much text as possible from "response" section in the source document context without making any changes. If the answer 
+        is not found in the context, kindly state "I don't know". Do not make up answers.
+
+    CONTEXT = {context}
+
+    QUESTION = {question}
+    """
+
+    PROMPT = PromptTemplate(
+    template = prompt_template,
+    input_variables = {"context", "question"},
+    )
+
+    chain = RetrievalQA.from_chain_type(
+    llm = llm,
+    chain_type = "stuff",
+    retriever = retriever,
+    input_key = "query",
+    return_source_documents = True,
+    chain_type_kwargs = {"prompt" : PROMPT}
+    )
+
+    return chain
+
 
 if __name__ == "__main__" :
-    create_vector_db()
+    chain = get_qa_chain()
+
+    print(chain("Do you provide internship?"))
