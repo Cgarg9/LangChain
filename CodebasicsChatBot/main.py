@@ -2,7 +2,8 @@ from langchain_community.llms import GooglePalm
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.embeddings import HuggingFaceInstructEmbeddings
 from langchain_community.vectorstores import FAISS 
-import google.generativeai as palm
+# import google.generativeai as palm
+from langchain_google_genai import GoogleGenerativeAI
 
 import os
 from dotenv import load_dotenv
@@ -11,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 api_key = os.getenv('API_KEY')
-llm = GooglePalm(google_api_key=api_key, temperature=0.1)
+llm = GoogleGenerativeAI(model="models/text-bison-001", google_api_key=api_key, temperature=0.1)
 
 instructor_embeddings = HuggingFaceInstructEmbeddings()
 vector_db_path = "faiss_index"
