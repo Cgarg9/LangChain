@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li>Home</li>
+            <li>About</li>
+        </ul>
+    </nav>
+    <div>
+        <h1>Welcome to GPT-Voice-Assistant</h1>
+    </div>
+    <div>
+        <button>Start</button>
+        <button>Stop</button>
+    </div>
+    <div class="container chats">
+        <h1>Your chats</h1>
+        <div>Your question</div>
+        <div>Your response</div>
+        <hr>
+    </div>
+    <script>
+        async function postData(url = "", data = {}) {
+            const response = await fetch(url, {
+                method: "POST",
+                mode: "cors",
+                cache: "no-cache",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                redirect: "follow",
+                referrerPolicy: "no-referrer",
+                body: JSON.stringify(data),
+            });
+
+            // Debugging: log the response or inspect it in other ways
+            const text = await response.text(); // Temporarily use text() to see the response
+            console.log(text); // Check what the actual response is
+
+            // Now, only parse as JSON if the response is indeed JSON
+            if (response.headers.get("content-type")?.includes("application/json")) {
+                return JSON.parse(text);
+            } else {
+                throw new Error("Received non-JSON response from the server");
+            }
+        }
+
+        postData("/api", { input: "hey how are you" }).then(data => {
+            console.log(data);
+        }).catch(error => {
+            console.error("Error during fetchData:", error);
+        });
+
+
+    </script>
+</body>
+
+</html>
