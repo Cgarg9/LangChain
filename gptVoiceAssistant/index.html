@@ -18,8 +18,8 @@
         <h1>Welcome to GPT-Voice-Assistant</h1>
     </div>
     <div>
-        <button>Start</button>
-        <button>Stop</button>
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
     </div>
     <div class="container chats">
         <h1>Your chats</h1>
@@ -27,6 +27,32 @@
         <div>Your response</div>
         <hr>
     </div>
+    <script>
+        let speech = true;
+        let globalTrascript;
+        window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.interimResults = true;
+
+        recognition.addEventListener('result', e => {
+            const transcript = Array.from(e.results)
+                .map(result => result[0])
+                .map(result => result.transcript)
+                .join('')
+
+            globalTrascript = transcript;
+        })
+        const populateUsingGPT = (input) => {
+            postData("/api", { input: input }).then(data => {
+                console.log(data.message);
+                document.querySelector(".chats").innerHTML = document.querySelector(".chats").innerHTML + `<div> Question: ${input}</div>
+                                                                <div> Answer: ${data.message}</div>
+                                                                <hr>`;
+            }).catch(error => {
+                console.error("Error during fetchData:", error);
+            });
+        }
+    </script>
     <script>
         async function postData(url = "", data = {}) {
             const response = await fetch(url, {
@@ -54,11 +80,18 @@
             }
         }
 
-        postData("/api", { input: "hey how are you" }).then(data => {
-            console.log(data);
-        }).catch(error => {
-            console.error("Error during fetchData:", error);
-        });
+        start.addEventListener("click", () => {
+            if (speech == true) {
+                recognition.start();
+                recognition.addEventListener("end", () => {
+                    console.log(globalTrascript)
+                    if (globalTrascript !== '') {
+                        populateUsingGPT(globalTrascript);
+                        globalTrascript = '';
+                    }
+                });
+            }
+        })
 
 
     </script>
